@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: monospace; }
+        .iframe-view { width: 100%; height: 100%; border: none; }
+        
+        /* V18-STYLE SMALL FLOATING PANEL */
+        .admin-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 155px;
+            background: rgba(0, 10, 0, 0.98);
+            border: 2px solid #00ff41;
+            border-radius: 12px;
+            padding: 10px;
+            z-index: 9999;
+            box-shadow: 0 0 20px #00ff41;
+            color: #00ff41;
+            touch-action: none; /* Allows dragging */
+        }
+
+        .input-extract {
+            background: #000;
+            border: 1px solid #00ff41;
+            color: #fff;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            padding: 4px;
+            margin: 8px 0;
+            outline: none;
+        }
+
+        .btn-extract {
+            background: #00ff41;
+            color: #000;
+            width: 100%;
+            font-weight: 900;
+            font-size: 10px;
+            padding: 10px;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .res-zone {
+            margin-top: 10px;
+            border-top: 1px solid #00ff41;
+            padding-top: 10px;
+            text-align: center;
+        }
+
+        .number-large { font-size: 2.8rem; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 5px; }
+        .glitch { animation: flash 1.2s infinite; }
+        @keyframes flash { 50% { opacity: 0.2; } }
+        
+        select { background: #000; color: #00ff41; border: 1px solid #00ff41; font-size: 8px; width: 100%; margin-bottom: 4px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <!-- THE GAME WEBSITE -->
+    <iframe id="gameFrame" src="https://maanwin.site/home/all/wingo" class="iframe-view"></iframe>
+
+    <!-- THE FLOATING ADMIN INJECTOR -->
+    <div class="admin-panel" id="dragPanel">
+        <div class="flex justify-between items-center text-[7px] font-bold">
+            <span class="glitch text-white uppercase">● APEX_V25_ROOT</span>
+            <span class="opacity-50">100% LOCK</span>
+        </div>
+
+        <select id="siteSwitch" onchange="changeSite()">
+            <option value="https://maanwin.site/home/all/wingo">MAANWIN</option>
+            <option value="https://dmwin.app/">DMWIN</option>
+            <option value="https://jaiclub.com/">JAI CLUB</option>
+            <option value="https://yaarwin.com/">YAARWIN</option>
+        </select>
+
+        <input type="number" id="periodInput" class="input-extract" placeholder="PERIOD NO.">
+        
+        <button onclick="extractResult()" class="btn-extract">EXTRACT DATA</button>
+
+        <div id="resultBox" class="hidden res-zone space-y-1">
+            <div id="resNum" class="number-large italic tracking-tighter">--</div>
+            <div id="resColor" class="text-[10px] font-black tracking-[0.3rem]">--</div>
+            <div id="resSize" class="text-[8px] font-bold opacity-60">--</div>
+            <div class="text-[7px] text-black bg-green-400 font-bold px-1 uppercase mt-2">Server Data Locked</div>
+        </div>
+    </div>
+
+    <script>
+        function changeSite() {
+            document.getElementById('gameFrame').src = document.getElementById('siteSwitch').value;
+        }
+
+        async function extractResult() {
+            const period = document.getElementById('periodInput').value;
+            if(!period) return;
+
+            const btn = document.querySelector('.btn-extract');
+            const resBox = document.getElementById('resultBox');
+
+            btn.innerText = "EXTRACTING...";
+            resBox.classList.add('hidden');
+
+            // Data extraction simulation
+            setTimeout(async () => {
+                const res = await fetch(`/extract?period=${period}`);
+                const data = await res.json();
+
+                btn.innerText = "EXTRACT DATA";
+                resBox.classList.remove('hidden');
+
+                document.getElementById('resNum').innerText = data.number;
+                
+                const cEl = document.getElementById('resColor');
+                cEl.innerText = data.color;
+                cEl.style.color = data.color.includes("GREEN") ? "#26a69a" : "#ef5350";
+                
+                document.getElementById('resSize').innerText = "RESULT: " + data.size;
+            }, 800);
+        }
+
+        // DRAGGABLE LOGIC FOR MOBILE
+        const panel = document.getElementById('dragPanel');
+        let active = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+
+        panel.addEventListener("touchstart", (e) => {
+            initialX = e.touches[0].clientX - xOffset;
+            initialY = e.touches[0].clientY - yOffset;
+            if (e.target === panel || panel.contains(e.target)) active = true;
+        }, false);
+
+        panel.addEventListener("touchend", () => {
+            initialX = currentX; initialY = currentY; active = false;
+        }, false);
+
+        panel.addEventListener("touchmove", (e) => {
+            if (active) {
+                e.preventDefault();
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+                xOffset = currentX; yOffset = currentY;
+                panel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+            }
+        }, false);
+    </script>
+</body>
+</html>
